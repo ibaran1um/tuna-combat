@@ -22,5 +22,4 @@
 ハッシュタグは index.html の `HASHTAG` で変えられます。
 
 `index.html?demo` で自動プレイになります。
-バランス調整は index.html 内の `CFG` と `PIG_TYPES` を編集してください。
 three.js (MIT License) を lib/ に同梱しています。
