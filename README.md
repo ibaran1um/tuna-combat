@@ -4,13 +4,25 @@
 
 ゲームプレイ：https://ibaran1um.github.io/tuna-combat/
 
+## 公開方法（GitHub Pages）
+1. このフォルダの中身（index.html と lib/）をリポジトリ直下に置いて push
+2. Settings → Pages → Branch を main / (root) にして保存
+
 ## 操作
 - PC: WASD移動 / マウス視点（右ドラッグ・Q/Eでも可）/ 左クリック・スペースで振る / Escで一時停止
 - スマホ: 左下スティックで移動 / 画面右側ドラッグで視点 / 「振る」ボタン
 
-## 配信規約
-- [X:ibaran1um](https://x.com/IbaraTamaki) を乗せてくれると嬉しいなぁ
-- 配信OK
-- 自作発言禁止
+## ランキング
+- 結果画面で名前を入れて登録すると、この端末の上位20件に残ります。
+- 全員で競う「みんなの記録」は、Googleスプレッドシートに記録をためます。
+  ranking-gas/README.md の手順でシートを用意し、index.html の `RANKING_API` にそのURLを入れてください。
 
-- 以上。
+## スコアのポスト
+結果画面の「スコアをポストする」で、最後の場面と出荷伝票を1枚にした画像を作ります。
+- スマホ：共有シートが開くので X を選ぶ（画像と #冷凍マグロで殴って出荷 が入ります）
+- PC：画像をコピーしてから X のポスト画面を開くので、貼り付けて投稿
+ハッシュタグは index.html の `HASHTAG` で変えられます。
+
+`index.html?demo` で自動プレイになります。
+バランス調整は index.html 内の `CFG` と `PIG_TYPES` を編集してください。
+three.js (MIT License) を lib/ に同梱しています。

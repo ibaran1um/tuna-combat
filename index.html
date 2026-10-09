@@ -118,6 +118,33 @@ button{font:inherit;cursor:pointer}
 #btnPause{position:absolute;left:50%;top:max(14px,env(safe-area-inset-top));transform:translateX(-50%);pointer-events:auto;
   border:0;background:rgba(23,48,72,.6);color:#fff;font-weight:900;padding:8px 14px;border-radius:4px}
 
+/* ランキング・登録・共有 */
+.entry{display:flex;flex-wrap:wrap;gap:8px;margin:-6px 0 6px}
+.entry input{flex:1 1 200px;min-width:0;font:inherit;font-size:17px;padding:10px 12px;border:2px solid var(--tuna);border-radius:4px;background:#FFF8EC;color:var(--ink)}
+.entry input:focus-visible{outline:3px solid var(--stamp);outline-offset:2px}
+.btn.small{font-size:17px;padding:10px 14px}
+.msg{min-height:1.5em;margin:0 0 12px;font-size:14px;font-weight:700;color:#4b3720}
+.msg.ok{color:var(--tuna)} .msg.err{color:var(--stamp)}
+.row.wrap .btn{flex:1 1 auto}
+.btn.share{background:#111;box-shadow:0 4px 0 #000}
+.board{width:min(560px,100%)}
+.board h2{font-family:var(--disp);font-weight:400;font-size:30px;margin:6px 0 12px;color:var(--tuna)}
+.board .stamp{top:22px;right:22px;width:68px;height:68px;font-size:21px}
+.board h2{padding-right:80px}
+.rtabs{display:flex;gap:8px;margin-bottom:10px}
+.rtabs button{flex:1;font:inherit;font-weight:900;font-size:15px;padding:8px;border-radius:4px;border:2px solid var(--tuna);background:transparent;color:var(--tuna)}
+.rtabs button.on{background:var(--tuna);color:var(--ice)}
+.rlist{list-style:none;margin:0 0 18px;padding:0;border-top:2px solid var(--kraft-d);max-height:min(52vh,460px);overflow:auto}
+.rlist li{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px dashed var(--kraft-d)}
+.rlist li.me{background:rgba(255,255,255,.45)}
+.rlist .pos{font-family:var(--disp);font-size:20px;color:var(--tuna);text-align:center}
+.rlist li:nth-child(1) .pos{color:var(--stamp);font-size:26px}
+.rlist li:nth-child(2) .pos,.rlist li:nth-child(3) .pos{color:var(--stamp)}
+.rlist .nm{font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rlist .sub{display:block;font-size:12px;font-weight:500;color:#4b3720}
+.rlist .sc{font-family:var(--disp);font-size:22px;color:var(--tuna);text-align:right}
+.rlist .empty{display:block;padding:18px 4px;color:#4b3720;border:0}
+.shareimg{display:block;width:100%;height:auto;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.25);margin:4px 0 12px;background:#cfe6ef}
 @media (max-width:600px){
   .tag{padding:40px 22px 24px}
   .stamp{width:64px;height:64px;font-size:20px;right:16px;top:30px}
@@ -173,6 +200,7 @@ button{font:inherit;cursor:pointer}
     </div>
     <div class="row">
       <button class="btn" id="btnStart">出荷をはじめる</button>
+      <button class="btn sub" id="btnRankT">ランキング</button>
       <span class="best" id="bestTitle"></span>
     </div>
   </div>
@@ -189,6 +217,32 @@ button{font:inherit;cursor:pointer}
   </div>
 </section>
 
+<section class="screen hidden" id="scRanking">
+  <div class="tag board">
+    <div class="stamp">番付</div>
+    <h2>出荷ランキング</h2>
+    <div class="rtabs" id="rtabs">
+      <button data-tab="online" id="tabOnline">みんなの記録</button>
+      <button data-tab="local" class="on">この端末の記録</button>
+    </div>
+    <ol class="rlist" id="rlist"></ol>
+    <div class="row"><button class="btn sub" id="btnRankClose">閉じる</button></div>
+  </div>
+</section>
+
+<section class="screen hidden" id="scShare">
+  <div class="tag board">
+    <h2>スコアをポスト</h2>
+    <img class="shareimg" id="shareImg" alt="スコア画像">
+    <p class="msg" id="shareMsg">画像をコピーしてからXのポスト画面を開きます。開いた画面に画像を貼り付け（Ctrl+V / ⌘V）してください。</p>
+    <div class="row wrap">
+      <button class="btn share" id="btnShareX">画像をコピーしてXを開く</button>
+      <button class="btn sub" id="btnShareSave">画像を保存</button>
+      <button class="btn sub" id="btnShareClose">閉じる</button>
+    </div>
+  </div>
+</section>
+
 <section class="screen hidden" id="scResult">
   <div class="tag slip">
     <div class="rank" id="rank">特選</div>
@@ -200,8 +254,15 @@ button{font:inherit;cursor:pointer}
       <dt>激突された回数</dt><dd id="rHits">0回</dd>
       <dt>ハイスコア</dt><dd id="rBest">0</dd>
     </dl>
-    <div class="row">
+    <div class="entry">
+      <input id="rName" maxlength="12" autocomplete="nickname" placeholder="名前（12文字まで）" aria-label="ランキングに載せる名前">
+      <button class="btn small" id="btnRegister">ランキングに登録</button>
+    </div>
+    <p class="msg" id="entryMsg" role="status"></p>
+    <div class="row wrap">
+      <button class="btn share" id="btnShare">スコアをポストする</button>
       <button class="btn" id="btnRetry">もう一度出荷する</button>
+      <button class="btn sub" id="btnRankR">ランキング</button>
       <button class="btn sub" id="btnTitle">タイトルに戻る</button>
     </div>
   </div>
@@ -211,6 +272,10 @@ button{font:inherit;cursor:pointer}
 import * as THREE from 'three';
 
 /* ================= 設定（ここを変えればバランス調整できます） ================= */
+/* みんなのランキング（Googleスプレッドシート + Apps Script）のウェブアプリURL。
+   空のままなら「この端末の記録」だけが使われます。例: 'https://script.google.com/macros/s/xxxxxxxx/exec' */
+const RANKING_API = 'https://script.google.com/macros/s/AKfycby2C4qqIQsgZE3V-uw8ZSC0w_e89hsCKIafF4GRmPfh6FKFs3GLRu5t-aroeTutf_si/exec';
+const HASHTAG = '冷凍マグロで殴って出荷';
 const CFG = {
   TIME: 180,          // 制限時間（秒）
   STUN: 3,            // 激突後に動けない時間（秒）
@@ -641,7 +706,7 @@ function startGame(){
   Object.assign(P,{face:Math.PI,stun:0,inv:0,swingT:-1,swingCd:0,queued:0,combo:0});
   P.pos.set(0,0,0); P.vel.set(0,0,0);
   for(let i=0;i<5;i++) spawnPig('normal');
-  show('scTitle',false); show('scResult',false); show('scPause',false);
+  show('scTitle',false); show('scResult',false); show('scPause',false); show('scRanking',false); show('scShare',false);
   UI.hud.classList.remove('hidden'); UI.touch.classList.toggle('hidden',!IS_TOUCH);
   UI.hint.textContent=IS_TOUCH?'左スティックで移動　右側ドラッグで視点　「振る」で攻撃':'WASDで移動　マウスで視点　クリックで振る　Escで一時停止';
   UI.hint.style.opacity=1; setTimeout(()=>UI.hint.style.opacity=0,7000);
@@ -652,7 +717,7 @@ function toTitle(){
   clearWorld(); G.phase='title'; G.paused=false;
   if(document.pointerLockElement) document.exitPointerLock();
   UI.hud.classList.add('hidden'); UI.touch.classList.add('hidden');
-  show('scResult',false); show('scPause',false); show('scTitle',true); refreshBestTitle();
+  show('scResult',false); show('scPause',false); show('scRanking',false); show('scShare',false); show('scTitle',true); refreshBestTitle();
   P.pos.set(0,0,0); P.stun=0; P.inv=0; P.swingT=-1; PL.body.visible=true;
 }
 function setPause(on){
@@ -672,8 +737,171 @@ function finish(){
   $('rBest').innerHTML=isNew?'<span class="newrec">新記録</span> '+best.toLocaleString():best.toLocaleString();
   const rk=$('rank'); rk.textContent=RANKS.find(r=>G.score>=r[0])[1];
   rk.classList.remove('pop'); void rk.offsetWidth; rk.classList.add('pop');
+  // 最後の場面を共有画像用に撮っておく（描画直後でないと真っ黒になるため、ここで描いてすぐ写す）
+  renderer.render(scene,camera); snapScene();
+  RES={score:G.score,shipped:G.shipped,combo:G.maxCombo,hits:G.hits,rank:rk.textContent,isNew,registered:false,at:Date.now()};
+  shareBlob=null; shareURL&&URL.revokeObjectURL(shareURL); shareURL=null;
+  $('rName').value=myName; $('rName').disabled=false; $('btnRegister').disabled=false;
+  setMsg('entryMsg',G.score>0?'名前を入れてランキングに登録できます。':'');
   show('scResult',true); $('btnRetry').focus();
 }
+
+/* ================= ランキング ================= */
+let RES=null, myName='', myLast=null;
+try{ myName=localStorage.getItem('maguro-name')||''; }catch(e){}
+function loadLocal(){ try{ return JSON.parse(localStorage.getItem('maguro-ranking')||'[]')||[]; }catch(e){ return []; } }
+function saveLocal(list){ try{ localStorage.setItem('maguro-ranking',JSON.stringify(list)); }catch(e){} }
+function cleanName(n){ return (n||'').replace(/[\u0000-\u001f\u007f<>]/g,'').trim().slice(0,12); }
+function setMsg(id,t,cls=''){ const e=$(id); e.textContent=t; e.className='msg'+(cls?' '+cls:''); }
+async function register(){
+  if(!RES||RES.registered) return;
+  const name=cleanName($('rName').value);
+  if(!name){ setMsg('entryMsg','名前を入れてください。','err'); $('rName').focus(); return; }
+  myName=name; try{ localStorage.setItem('maguro-name',name); }catch(e){}
+  const entry={name,score:RES.score,shipped:RES.shipped,combo:RES.combo,at:RES.at};
+  // この端末の記録（上位20件）
+  const list=loadLocal(); list.push(entry); list.sort((a,b)=>b.score-a.score||a.at-b.at);
+  const localPos=list.indexOf(entry)+1; saveLocal(list.slice(0,20));
+  RES.registered=true; myLast=entry; $('rName').disabled=true; $('btnRegister').disabled=true;
+  if(!RANKING_API){ setMsg('entryMsg',localPos<=20?`この端末で${localPos}位に登録しました。`:'登録しました（この端末の上位20位には入りませんでした）。','ok'); return; }
+  setMsg('entryMsg','送信中…');
+  try{
+    // text/plain で送ると、Apps Script への送信で余計な確認通信（CORS preflight）が起きない
+    const j=await callAPI({method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(entry)});
+    setMsg('entryMsg',`みんなの記録で${j.rank}位に入りました！（全${j.total}件中）`,'ok');
+  }catch(e){
+    setMsg('entryMsg',`この端末には保存しました。みんなの記録への登録はできませんでした（${e.message}）。`,'err');
+  }
+}
+let rankTab='local';
+async function openRanking(from){
+  rankTab=RANKING_API?'online':'local';
+  $('tabOnline').classList.toggle('hidden',!RANKING_API);
+  show(from,false); $('scRanking').dataset.from=from; show('scRanking',true);
+  renderRanking();
+}
+function rowHTML(e,i){
+  const me=myLast&&e.name===myLast.name&&e.score===myLast.score&&e.at===myLast.at;
+  return `<li class="${me?'me':''}"><span class="pos">${i+1}</span><span class="nm">${escHTML(e.name)}<span class="sub">${e.shipped}頭出荷・最大${e.combo||0}頭まとめ</span></span><span class="sc">${e.score.toLocaleString()}</span></li>`;
+}
+async function renderRanking(){
+  document.querySelectorAll('#rtabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===rankTab));
+  const ol=$('rlist');
+  if(rankTab==='local'){
+    const list=loadLocal();
+    ol.innerHTML=list.length?list.map(rowHTML).join(''):'<li class="empty">まだ記録がありません。遊んだあとに名前を入れて登録してください。</li>';
+    return;
+  }
+  ol.innerHTML='<li class="empty">読み込み中…</li>';
+  try{
+    const j=await callAPI(); if(rankTab!=='online') return;
+    ol.innerHTML=(j.scores&&j.scores.length)?j.scores.map(rowHTML).join(''):'<li class="empty">まだ誰も登録していません。一番乗りのチャンスです。</li>';
+  }catch(e){ if(rankTab==='online') ol.innerHTML=`<li class="empty">みんなの記録を読み込めませんでした（${escHTML(e.message)}）。</li>`; }
+}
+async function callAPI(opt={}){
+  const ac=new AbortController(), timer=setTimeout(()=>ac.abort(),15000);
+  try{
+    const r=await fetch(RANKING_API,{...opt,signal:ac.signal,redirect:'follow'});
+    if(!r.ok) throw new Error('通信エラー '+r.status);
+    let j; try{ j=await r.json(); }catch(e){ throw new Error('応答が読めません。公開設定を確認してください'); }
+    if(!j.ok) throw new Error(j.error||'不明なエラー');
+    return j;
+  }catch(e){ throw e.name==='AbortError'?new Error('時間切れ'):e instanceof TypeError?new Error('通信できませんでした'):e; }
+  finally{ clearTimeout(timer); }
+}
+function escHTML(t){ return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ================= スコア画像とポスト ================= */
+const snapCanvas=document.createElement('canvas');
+function snapScene(){
+  const w=canvas.width,h=canvas.height; if(!w||!h) return;
+  snapCanvas.width=w; snapCanvas.height=h; snapCanvas.getContext('2d').drawImage(canvas,0,0);
+}
+let shareBlob=null, shareURL=null;
+async function makeShareImage(){
+  if(shareBlob) return shareBlob;
+  try{ await document.fonts.ready; }catch(e){}
+  const W=1200,H=675,c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+  const disp='"Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif', body='"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+  // 背景：最後の場面
+  x.fillStyle='#CFE6EF'; x.fillRect(0,0,W,H);
+  if(snapCanvas.width){ const sw=snapCanvas.width, sh=snapCanvas.height, k=Math.max((W+320)/sw,H/sh);
+    x.drawImage(snapCanvas,(W-sw*k)/2-160,(H-sh*k)/2,sw*k,sh*k); }  // 人物が伝票に隠れないよう左に寄せる
+  const g=x.createLinearGradient(W*0.35,0,W,0); g.addColorStop(0,'rgba(23,48,72,0)'); g.addColorStop(1,'rgba(23,48,72,.55)'); x.fillStyle=g; x.fillRect(0,0,W,H);
+  // ロゴ
+  x.font=`64px ${disp}`; x.lineJoin='round'; x.lineWidth=12; x.strokeStyle='#1B3352'; x.fillStyle='#E4F2F7';
+  x.strokeText('TunaCombat',40,96); x.fillText('TunaCombat',40,96);
+  // 荷札（出荷伝票）
+  const tx=650,ty=40,tw=510,th=595,cut=40;
+  x.save(); x.translate(tx,ty); x.rotate(0.02);
+  x.beginPath(); x.moveTo(cut,0); x.lineTo(tw-cut,0); x.lineTo(tw,cut); x.lineTo(tw,th); x.lineTo(0,th); x.lineTo(0,cut); x.closePath();
+  x.shadowColor='rgba(0,0,0,.35)'; x.shadowBlur=24; x.shadowOffsetY=8; x.fillStyle='#CDA36C'; x.fill(); x.shadowColor='transparent';
+  x.fillStyle='rgba(23,48,72,.55)'; x.beginPath(); x.arc(tw/2,26,11,0,7); x.fill();
+  x.fillStyle='#1B3352'; x.font=`44px ${disp}`; x.textBaseline='alphabetic'; x.fillText('出荷伝票',36,104);
+  const rows=[['スコア',RES.score.toLocaleString(),true],['出荷頭数',RES.shipped+'頭'],['最大まとめ打ち',RES.combo+'頭'],['激突された回数',RES.hits+'回']];
+  let y=196; x.strokeStyle='#9C7646'; x.lineWidth=3; x.beginPath(); x.moveTo(30,y-24); x.lineTo(tw-30,y-24); x.stroke();
+  for(const [k,v,big] of rows){
+    const rh=big?96:66;
+    x.fillStyle='#17222E'; x.font=`700 24px ${body}`; x.textAlign='left'; x.fillText(k,36,y+(big?44:28));
+    x.fillStyle='#1B3352'; x.font=`${big?64:36}px ${disp}`; x.textAlign='right'; x.fillText(v,tw-36,y+(big?62:32));
+    y+=rh; x.setLineDash([6,6]); x.lineWidth=1.5; x.beginPath(); x.moveTo(30,y-16); x.lineTo(tw-30,y-16); x.stroke(); x.setLineDash([]);
+  }
+  x.textAlign='left'; x.fillStyle='#3d2c17'; x.font=`700 22px ${body}`;
+  if(RES.isNew) { x.fillStyle='#C8102E'; x.fillText('自己ベスト更新！',36,y+18); }
+  x.fillStyle='#1B3352'; x.font=`900 24px ${body}`; x.fillText('#'+HASHTAG,36,th-36);
+  // 格付けハンコ
+  x.save(); x.translate(tw-96,92); x.rotate(0.2); x.globalCompositeOperation='multiply';
+  x.strokeStyle='#C8102E'; x.lineWidth=6; x.beginPath(); x.arc(0,0,62,0,7); x.stroke(); x.lineWidth=3; x.beginPath(); x.arc(0,0,53,0,7); x.stroke();
+  x.fillStyle='#C8102E'; const rt=RES.rank; x.font=`${rt.length>2?26:40}px ${disp}`; x.textAlign='center'; x.textBaseline='middle'; x.fillText(rt,0,2);
+  x.restore(); x.restore();
+  return shareBlob=await new Promise(r=>c.toBlob(r,'image/png'));
+}
+function shareText(){
+  return `TunaCombatで冷凍マグロを振り回し、豚を${RES.shipped}頭出荷しました！\nスコア ${RES.score.toLocaleString()}（格付け：${RES.rank}）\n#${HASHTAG}`;
+}
+function pageURL(){ return location.href.split(/[?#]/)[0]; }
+function xIntentURL(){ return 'https://x.com/intent/post?text='+encodeURIComponent(shareText())+'&url='+encodeURIComponent(pageURL()); }
+async function startShare(){
+  if(!RES) return;
+  const btn=$('btnShare'); btn.disabled=true;
+  try{
+    const blob=await makeShareImage();
+    const file=new File([blob],'tunacombat-score.png',{type:'image/png'});
+    // スマホなど：共有シートで画像ごと渡す
+    if(IS_TOUCH && navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file],text:shareText()+'\n'+pageURL()}); return; }
+      catch(e){ if(e.name==='AbortError') return; }
+    }
+    // PC：プレビューを出して、画像コピー→Xのポスト画面
+    if(shareURL) URL.revokeObjectURL(shareURL); shareURL=URL.createObjectURL(blob);
+    $('shareImg').src=shareURL;
+    if(IS_TOUCH){ // スマホでは「保存」→「Xを開く」の順に
+      const sv=$('btnShareSave'), xb=$('btnShareX'); xb.parentNode.insertBefore(sv,xb);
+      sv.className='btn share'; xb.className='btn'; }
+    const canCopy=!IS_TOUCH&&!!(navigator.clipboard&&window.ClipboardItem);
+    $('btnShareX').textContent=canCopy?'画像をコピーしてXを開く':'Xを開く';
+    setMsg('shareMsg',IS_TOUCH?'「画像を保存」してから「Xを開く」を押し、ポスト画面で保存した画像を添付してください。':canCopy?'画像をコピーしてからXのポスト画面を開きます。開いた画面に画像を貼り付け（Ctrl+V / ⌘V）してください。'
+                              :'このブラウザでは画像をコピーできません。「画像を保存」してから、Xのポスト画面で画像を添付してください。');
+    show('scResult',false); show('scShare',true);
+  } finally { btn.disabled=false; }
+}
+$('btnShareX').addEventListener('click',()=>{
+  if(!IS_TOUCH&&navigator.clipboard&&window.ClipboardItem&&shareBlob){
+    navigator.clipboard.write([new ClipboardItem({'image/png':shareBlob})])
+      .then(()=>setMsg('shareMsg','画像をコピーしました。開いたXのポスト画面に貼り付け（Ctrl+V / ⌘V）してください。','ok'))
+      .catch(()=>setMsg('shareMsg','画像をコピーできませんでした。「画像を保存」してから添付してください。','err'));
+  }
+  window.open(xIntentURL(),'_blank','noopener');
+});
+$('btnShareSave').addEventListener('click',()=>{ if(!shareURL) return; const a=document.createElement('a'); a.href=shareURL; a.download='tunacombat-score.png'; a.click(); });
+$('btnShareClose').addEventListener('click',()=>{ show('scShare',false); show('scResult',true); });
+$('btnShare').addEventListener('click',startShare);
+$('btnRegister').addEventListener('click',register);
+$('rName').addEventListener('keydown',e=>{ e.stopPropagation(); if(e.key==='Enter') register(); });
+$('btnRankT').addEventListener('click',()=>openRanking('scTitle'));
+$('btnRankR').addEventListener('click',()=>openRanking('scResult'));
+$('rtabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; rankTab=b.dataset.tab; renderRanking(); });
+$('btnRankClose').addEventListener('click',()=>{ show('scRanking',false); show($('scRanking').dataset.from||'scTitle',true); });
 
 /* ================= spawn ================= */
 function pickType(){
@@ -1130,7 +1358,7 @@ function frame(now){
 requestAnimationFrame(frame);
 
 // 動作確認用フック（ゲームには影響しません）
-window.__maguro={G,P,CFG,HOOK,startGame,spawnPig,requestSwing,
+window.__maguro={get RES(){return RES;},makeShareImage,openRanking,register,G,P,CFG,HOOK,startGame,spawnPig,requestSwing,
   camera, PL, makeTuna, scene, killPig, bigShukka,
   stepNR:(n=1,dt=1/60)=>{ for(let i=0;i<n;i++){ if(G.phase!=='title'&&G.phase!=='result') update(dt); updateMist(dt); updateCamera(dt);} },
   step:(n=1,dt=1/60)=>{ for(let i=0;i<n;i++){ if(G.phase!=='title'&&G.phase!=='result') update(dt); updateMist(dt); if(!HOOK.cam) updateCamera(dt);} renderer.render(scene,camera); }};
