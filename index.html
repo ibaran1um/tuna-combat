@@ -998,7 +998,7 @@ addEventListener('mousemove',e=>{
   $('btnPause').addEventListener('click',()=>setPause(true));
 }
 $('btnStart').addEventListener('click',startGame);
-$('btnRetry').addEventListener('click',()=>{ if(RES&&RES.ura) startUra(); else startGame(); });
+$('btnRetry').addEventListener('click',startGame);
 $('btnTitle').addEventListener('click',toTitle);
 $('btnResume').addEventListener('click',()=>{ setPause(false); canvas.focus(); });
 $('btnQuit').addEventListener('click',toTitle);
@@ -1715,7 +1715,7 @@ function finishUra(){
   renderer.render(scene,camera); snapScene();
   RES={ura:true,time:t,escapes:U.escapes,tackles:U.tackles,isNew,rank:'脱走',registered:true,at:Date.now()};
   shareBlob=null; shareURL&&URL.revokeObjectURL(shareURL); shareURL=null;
-  show('scResult',true); $('btnRetry').focus();
+  show('scResult',true); $('btnShare').focus();
 }
 function setResultMode(ura){
   $('rTitle').textContent=ura?'逃走記録':'出荷伝票';
@@ -1723,7 +1723,7 @@ function setResultMode(ura){
   L.forEach((t,i)=>{ $('rL'+(i+1)).textContent=t; });
   $('rL4').classList.toggle('hidden',ura); $('rHits').classList.toggle('hidden',ura);
   show('entryBox',!ura); show('entryMsg',!ura); $('btnRankR').classList.toggle('hidden',ura);
-  $('btnRetry').textContent=ura?'もう一度逃げる':'もう一度出荷する';
+  $('btnRetry').textContent='もう一度出荷する'; $('btnRetry').classList.toggle('hidden',ura);
   $('btnShare').textContent=ura?'逃げた秒数をポストする':'スコアをポストする';
   $('shareTitle').textContent=ura?'逃げた秒数をポスト':'スコアをポスト';
   $('btnUra').classList.add('hidden');
