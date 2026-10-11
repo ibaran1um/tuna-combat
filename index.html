@@ -127,6 +127,26 @@ button{font:inherit;cursor:pointer}
 .msg.ok{color:var(--tuna)} .msg.err{color:var(--stamp)}
 .row.wrap .btn{flex:1 1 auto}
 .btn.share{background:#111;box-shadow:0 4px 0 #000}
+.btn.ura{width:100%;background:#0D1726;color:#BFE3FF;box-shadow:0 4px 0 #000,0 0 0 2px #6FB6FF inset;animation:uraglow 1.6s ease-in-out infinite alternate}
+@keyframes uraglow{to{box-shadow:0 4px 0 #000,0 0 0 2px #6FB6FF inset,0 0 18px #6FB6FF}}
+body.night .label .s b{color:#0D1726}
+#tStamp{user-select:none}
+#danger b{position:fixed;left:50%;top:50%;z-index:12;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;display:none;pointer-events:none;
+  background:#C8102E;color:#fff;font:900 30px/46px var(--disp);text-align:center;box-shadow:0 0 0 3px #fff,0 0 18px #C8102E;animation:beat .4s infinite}
+#danger b::after{content:"!"}
+#exitArrow{position:fixed;left:50%;top:92px;z-index:12;width:84px;margin-left:-42px;text-align:center;pointer-events:none;
+  font-family:var(--disp);font-size:16px;color:#3DFF9A;-webkit-text-stroke:3px #0D1726;paint-order:stroke fill}
+#exitArrow i{display:block;width:0;height:0;margin:0 auto 2px;border-left:18px solid transparent;border-right:18px solid transparent;
+  border-bottom:34px solid #3DFF9A;filter:drop-shadow(0 0 6px #3DFF9A);transform-origin:50% 70%}
+#uraIntro{position:fixed;inset:0;z-index:15;display:flex;align-items:center;justify-content:center;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(5,10,20,.55),rgba(5,10,20,.92));transition:opacity .5s}
+#uraIntro.fade{opacity:0}
+@media (min-width:760px){ #uraIntro br{display:none} }
+#uraIntro p{margin:0 16px;font-family:var(--disp);font-size:clamp(34px,8.5vw,84px);line-height:1.2;color:#F4A6B8;text-align:center;
+  -webkit-text-stroke:2px #0D1726;paint-order:stroke fill;text-shadow:0 0 24px rgba(244,166,184,.55);animation:introIn .7s ease-out both}
+#uraIntro p.run{color:#fff;font-size:clamp(56px,14vw,140px);-webkit-text-stroke:4px #C8102E;text-shadow:0 0 30px rgba(200,16,46,.6);animation:introRun .45s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes introIn{from{opacity:0;letter-spacing:.4em;filter:blur(6px)}to{opacity:1;letter-spacing:.05em;filter:none}}
+@keyframes introRun{from{opacity:0;transform:scale(2.6)}to{opacity:1;transform:scale(1)}}
 .board{width:min(560px,100%)}
 .board h2{font-family:var(--disp);font-weight:400;font-size:30px;margin:6px 0 12px;color:var(--tuna)}
 .board .stamp{top:22px;right:22px;width:68px;height:68px;font-size:21px}
@@ -161,10 +181,13 @@ button{font:inherit;cursor:pointer}
 <div id="speed"></div>
 <div id="fx"></div>
 <div id="shukka"></div>
+<div id="danger"><b></b><b></b><b></b><b></b></div>
+<div id="exitArrow" class="hidden"><i></i><span>出口</span></div>
+<div id="uraIntro" class="hidden"><p id="uraIntroText"></p></div>
 
 <div id="hud" class="hidden">
-  <div class="timer" id="timerBox"><span>残り時間</span><strong id="timer">3:00</strong></div>
-  <div class="label"><div class="n" id="shipped">0<small>頭</small></div><div class="s">スコア<b id="score">0</b></div></div>
+  <div class="timer" id="timerBox"><span id="timerLabel">残り時間</span><strong id="timer">3:00</strong></div>
+  <div class="label" id="labelBox"><div class="n" id="shipped">0<small>頭</small></div><div class="s">スコア<b id="score">0</b></div></div>
   <div id="banner"></div>
   <div id="combo"></div>
   <div id="status" class="hidden"></div>
@@ -180,7 +203,7 @@ button{font:inherit;cursor:pointer}
 
 <section class="screen" id="scTitle">
   <div class="tag">
-    <div class="stamp">出荷</div>
+    <div class="stamp" id="tStamp">出荷</div>
     <h1 class="title">TunaCombat<small>冷凍マグロで豚を出荷する3分間</small></h1>
     <div class="rules">
       <p>カチカチの冷凍マグロを振り回して、突っ込んでくる豚を薙ぎ払おう。吹っ飛んだ豚はそのままトラックへ出荷されます。</p>
@@ -232,7 +255,7 @@ button{font:inherit;cursor:pointer}
 
 <section class="screen hidden" id="scShare">
   <div class="tag board">
-    <h2>スコアをポスト</h2>
+    <h2 id="shareTitle">スコアをポスト</h2>
     <img class="shareimg" id="shareImg" alt="スコア画像">
     <p class="msg" id="shareMsg">画像をコピーしてからXのポスト画面を開きます。開いた画面に画像を貼り付け（Ctrl+V / ⌘V）してください。</p>
     <div class="row wrap">
@@ -246,20 +269,21 @@ button{font:inherit;cursor:pointer}
 <section class="screen hidden" id="scResult">
   <div class="tag slip">
     <div class="rank" id="rank">特選</div>
-    <h2>出荷伝票</h2>
+    <h2 id="rTitle">出荷伝票</h2>
     <dl>
-      <dt>スコア</dt><dd class="big" id="rScore">0</dd>
-      <dt>出荷頭数</dt><dd id="rShipped">0頭</dd>
-      <dt>最大まとめ打ち</dt><dd id="rCombo">0頭</dd>
-      <dt>激突された回数</dt><dd id="rHits">0回</dd>
-      <dt>ハイスコア</dt><dd id="rBest">0</dd>
+      <dt id="rL1">スコア</dt><dd class="big" id="rScore">0</dd>
+      <dt id="rL2">出荷頭数</dt><dd id="rShipped">0頭</dd>
+      <dt id="rL3">最大まとめ打ち</dt><dd id="rCombo">0頭</dd>
+      <dt id="rL4">激突された回数</dt><dd id="rHits">0回</dd>
+      <dt id="rL5">ハイスコア</dt><dd id="rBest">0</dd>
     </dl>
-    <div class="entry">
+    <div class="entry" id="entryBox">
       <input id="rName" maxlength="12" autocomplete="nickname" placeholder="名前（12文字まで）" aria-label="ランキングに載せる名前">
       <button class="btn small" id="btnRegister">ランキングに登録</button>
     </div>
     <p class="msg" id="entryMsg" role="status"></p>
     <div class="row wrap">
+      <button class="btn ura hidden" id="btnUra">裏ステージに入れる！？</button>
       <button class="btn share" id="btnShare">スコアをポストする</button>
       <button class="btn" id="btnRetry">もう一度出荷する</button>
       <button class="btn sub" id="btnRankR">ランキング</button>
@@ -295,7 +319,7 @@ const PIG_TYPES = {
   gold:   { hp:1, score:600,  scale:0.9,  speed:1.45, color:0xE8B931, dark:0xC79512 },
   boss:   { hp:8, score:3000, scale:2.8,  speed:0.7,  color:0xEE9AAE, dark:0xC9657E },  // 超大型豚
 };
-const RANKS = [ [60000,'特選'], [35000,'上'], [15000,'並'], [0,'規格外'] ];
+const RANKS = [ [275000,'伝説'], [200000,'幻'], [120000,'極上'], [60000,'特選'], [35000,'上'], [15000,'並'], [0,'規格外'] ];
 
 const params = new URLSearchParams(location.search);
 const DEMO = params.has('demo');
@@ -325,7 +349,7 @@ let BASE_FOV=62;
 function resize(){ renderer.setSize(innerWidth,innerHeight,false); camera.aspect=innerWidth/innerHeight; BASE_FOV=camera.aspect<1?74:62; camera.fov=BASE_FOV; camera.updateProjectionMatrix(); }
 addEventListener('resize',resize); resize();
 
-scene.add(new THREE.HemisphereLight(0xEAF6FF,0x7A8A55,1.7));
+const hemi=new THREE.HemisphereLight(0xEAF6FF,0x7A8A55,1.7); scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xFFF6E8,2.3);
 sun.position.set(22,40,14); sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048);
@@ -608,7 +632,7 @@ function emitMist(pos,{n=1,spread=0.4,s0=0.25,s1=0.9,life=1.1,op=0.5,up=0.1}={})
 const mistV=new THREE.Vector3();
 function updateMist(dt){
   // マグロから常に冷気。振っている間は多め
-  const rate=(P.swingT>=0?110:16);
+  const rate=U.on?0:(P.swingT>=0?110:16);
   mistAcc+=rate*dt;
   if(mistAcc>=1){ PL.root.updateMatrixWorld(true);
     while(mistAcc>=1){ mistAcc--; mistV.set(rand(-0.25,0.25),rand(-0.3,0.25),rand(0.2,2.7)); PL.tuna.localToWorld(mistV);
@@ -699,7 +723,7 @@ function clearWorld(){
 }
 function startGame(){
   initAudio(); AU.ctx?.resume?.();
-  clearWorld();
+  leaveUra(); clearWorld();
   Object.assign(G,{phase:'count',paused:false,time:CFG.TIME,count:3,endT:0,score:0,shipped:0,hits:0,maxCombo:0,spawnT:0,
     swingId:0,hitStop:0,elapsed:0,yaw:Math.PI,pitch:0.32,lastBeep:99,ev1:false,ev2:false,stampede:false,slowmo:0,fovKick:0,pileN:0});
   $('speed').classList.remove('on'); $('shukka').classList.remove('on');
@@ -714,7 +738,7 @@ function startGame(){
   canvas.focus();
 }
 function toTitle(){
-  clearWorld(); G.phase='title'; G.paused=false;
+  leaveUra(); clearWorld(); G.phase='title'; G.paused=false;
   if(document.pointerLockElement) document.exitPointerLock();
   UI.hud.classList.add('hidden'); UI.touch.classList.add('hidden');
   show('scResult',false); show('scPause',false); show('scRanking',false); show('scShare',false); show('scTitle',true); refreshBestTitle();
@@ -730,6 +754,8 @@ function finish(){
   if(document.pointerLockElement) document.exitPointerLock();
   UI.hud.classList.add('hidden'); UI.touch.classList.add('hidden');
   const isNew=G.score>best; if(isNew){best=G.score; try{localStorage.setItem('maguro-best',best);}catch(e){}}
+  setResultMode(false);
+  if(G.score>=275000) $('btnUra').classList.remove('hidden');
   $('rScore').textContent=G.score.toLocaleString();
   $('rShipped').textContent=G.shipped+'頭';
   $('rCombo').textContent=G.maxCombo+'頭';
@@ -837,8 +863,9 @@ async function makeShareImage(){
   x.beginPath(); x.moveTo(cut,0); x.lineTo(tw-cut,0); x.lineTo(tw,cut); x.lineTo(tw,th); x.lineTo(0,th); x.lineTo(0,cut); x.closePath();
   x.shadowColor='rgba(0,0,0,.35)'; x.shadowBlur=24; x.shadowOffsetY=8; x.fillStyle='#CDA36C'; x.fill(); x.shadowColor='transparent';
   x.fillStyle='rgba(23,48,72,.55)'; x.beginPath(); x.arc(tw/2,26,11,0,7); x.fill();
-  x.fillStyle='#1B3352'; x.font=`44px ${disp}`; x.textBaseline='alphabetic'; x.fillText('出荷伝票',36,104);
-  const rows=[['スコア',RES.score.toLocaleString(),true],['出荷頭数',RES.shipped+'頭'],['最大まとめ打ち',RES.combo+'頭'],['激突された回数',RES.hits+'回']];
+  x.fillStyle='#1B3352'; x.font=`44px ${disp}`; x.textBaseline='alphabetic'; x.fillText(RES.ura?'逃走記録':'出荷伝票',36,104);
+  const rows=RES.ura?[['逃げた時間',RES.time.toFixed(1)+'秒',true],['脱出した回数',RES.escapes+'回'],['体当たりした回数',RES.tackles+'回']]
+    :[['スコア',RES.score.toLocaleString(),true],['出荷頭数',RES.shipped+'頭'],['最大まとめ打ち',RES.combo+'頭'],['激突された回数',RES.hits+'回']];
   let y=196; x.strokeStyle='#9C7646'; x.lineWidth=3; x.beginPath(); x.moveTo(30,y-24); x.lineTo(tw-30,y-24); x.stroke();
   for(const [k,v,big] of rows){
     const rh=big?96:66;
@@ -857,6 +884,7 @@ async function makeShareImage(){
   return shareBlob=await new Promise(r=>c.toBlob(r,'image/png'));
 }
 function shareText(){
+  if(RES.ura) return `裏ステージで${RES.time.toFixed(1)}秒逃げ切りました！ #${HASHTAG}`;
   return `TunaCombatで冷凍マグロを振り回し、豚を${RES.shipped}頭出荷しました！\nスコア ${RES.score.toLocaleString()}（格付け：${RES.rank}）\n#${HASHTAG}`;
 }
 function pageURL(){ return location.href.split(/[?#]/)[0]; }
@@ -970,7 +998,7 @@ addEventListener('mousemove',e=>{
   $('btnPause').addEventListener('click',()=>setPause(true));
 }
 $('btnStart').addEventListener('click',startGame);
-$('btnRetry').addEventListener('click',startGame);
+$('btnRetry').addEventListener('click',()=>{ if(RES&&RES.ura) startUra(); else startGame(); });
 $('btnTitle').addEventListener('click',toTitle);
 $('btnResume').addEventListener('click',()=>{ setPause(false); canvas.focus(); });
 $('btnQuit').addEventListener('click',toTitle);
@@ -1334,8 +1362,9 @@ function updateCamera(dt){
     return;
   }
   const fx_=Math.sin(G.yaw), fz=Math.cos(G.yaw), rx=-Math.cos(G.yaw), rz=Math.sin(G.yaw);
-  const dist=camera.aspect<1?8.2:5.4, cp=Math.cos(G.pitch), sp=Math.sin(G.pitch), sh=0.75;
-  const tx=P.pos.x, ty=1.6, tz=P.pos.z;
+  const pitch=U.on?Math.max(G.pitch,0.62):G.pitch;  // 裏ステージは周りが見えるよう高めに引く
+  const dist=(camera.aspect<1?8.2:5.4)*(U.on?1.75:1), cp=Math.cos(pitch), sp=Math.sin(pitch), sh=U.on?0:0.75;
+  const tx=P.pos.x, ty=U.on?1.0:1.6, tz=P.pos.z;
   camPos.set(tx-fx_*dist*cp+rx*sh, ty+dist*sp+0.3, tz-fz*dist*cp+rz*sh);
   camLook.set(tx+fx_*4+rx*sh*0.5, ty+0.4-sp*2.2, tz+fz*4+rz*sh*0.5);
   camera.position.copy(camPos);
@@ -1344,13 +1373,371 @@ function updateCamera(dt){
   camera.lookAt(camLook);
 }
 
+/* ================= 裏ステージ「逆出荷」 ================= */
+const URA = {
+  LIVES: 3,            // 何発殴られたら出荷か
+  PIG_SPEED: 7.6,      // 豚（プレイヤー）の速さ
+  DASH_SPEED: 17,      // 体当たりの速さ
+  DASH_TIME: 0.3,
+  DASH_CD: 0.9,
+  CHASER_STUN: 3,      // 体当たりされた市場の人がピヨる秒数
+  CHASER_SPEED: 5.7,   // 追っ手の基本の速さ（脱出するたびに少し上がる）
+  WINDUP: 0.42,        // 振りかぶる時間
+  SWING: 0.5,          // 振り切る時間
+  REACH: 3.2,
+  EXIT_FIRST: 9, EXIT_OPEN: 12, EXIT_CLOSED: 10,
+  MAX_CHASERS: 8,
+  RAMP: 25,            // この秒数ごとに追っ手が1人増えて速くなる
+};
+const U={on:false,lives:3,time:0,escapes:0,tackles:0,wave:1,chasers:[],exitOpen:false,exitT:0,exitA:0,
+  dashT:-1,dashCd:0,dashDir:{x:0,z:1},over:false,shipT:-1,from:new THREE.Vector3(),to:new THREE.Vector3(),run:0,intro:0,introStep:0};
+let uraBest=0; try{uraBest=+localStorage.getItem('maguro-ura-best')||0;}catch(e){}
+
+// 操作する豚（自分専用の色を持たせて、殴られるたびに凍っていく）
+const me=makePig('normal'); me.root.visible=false; scene.add(me.root);
+me.inner.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.userData.base=o.material.color.getHex(); if(o.material.emissive) o.material.emissive.setHex(0x3a1420); } });
+const meStars=new THREE.Group(); meStars.position.y=1.9; me.root.add(meStars);
+const iceCol=new THREE.Color(0xC7E6F3), tmpCol=new THREE.Color();
+function frostMe(level){ me.inner.traverse(o=>{ if(o.isMesh&&o.userData.base!=null){ tmpCol.setHex(o.userData.base).lerp(iceCol,level); o.material.color.copy(tmpCol);
+  if(o.material.emissive) o.material.emissive.setHex(level>=1?0x2c4d60:0x3a1420); } }); }
+
+// 夜の冷凍倉庫
+const snowGeo=new THREE.BufferGeometry(), SNOW=900, snowPos=new Float32Array(SNOW*3);
+for(let i=0;i<SNOW;i++){ snowPos[i*3]=rand(-45,45); snowPos[i*3+1]=rand(0,24); snowPos[i*3+2]=rand(-45,45); }
+snowGeo.setAttribute('position',new THREE.BufferAttribute(snowPos,3));
+const snow=new THREE.Points(snowGeo,new THREE.PointsMaterial({color:0xEAF4FF,size:0.16,transparent:true,opacity:0.85,depthWrite:false}));
+snow.visible=false; snow.frustumCulled=false; scene.add(snow);
+const mudMat=mat(0xA2845A);
+function setNight(on){
+  const bg=on?0x0D1726:0xCFE6EF; scene.background.setHex(bg); scene.fog.color.setHex(bg); scene.fog.near=on?26:50; scene.fog.far=on?78:120;
+  hemi.color.setHex(on?0x7C9BD6:0xEAF6FF); hemi.groundColor.setHex(on?0x1D2533:0x7A8A55); hemi.intensity=on?1.15:1.7;
+  sun.color.setHex(on?0xA9C4FF:0xFFF6E8); sun.intensity=on?1.5:2.3;
+  ground.material.color.setHex(on?0x26332F:0x9DBB6E); pen.material.color.setHex(on?0xA7BACA:0xC4A577); mudMat.color.setHex(on?0x8296A6:0xA2845A);
+  snow.visible=on; document.body.classList.toggle('night',on);
+}
+
+// 出口
+const exitTex=(()=>{const c=document.createElement('canvas');c.width=256;c.height=96;const x=c.getContext('2d');
+  x.fillStyle='#14965A'; x.fillRect(0,0,256,96); x.fillStyle='#fff'; x.font='bold 64px "Dela Gothic One",sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText('出口',128,52);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;})();
+const exitG=new THREE.Group(); exitG.visible=false; scene.add(exitG);
+for(const sx of [1,-1]) part(GEO.box,0x1C5C3A,[0.3,3.2,0.3],[1.7*sx,1.6,0],exitG);
+part(GEO.box,0x1C5C3A,[3.8,0.3,0.3],[0,3.25,0],exitG);
+{ const sg=new THREE.Mesh(new THREE.PlaneGeometry(2.4,0.9),new THREE.MeshBasicMaterial({map:exitTex,side:THREE.DoubleSide})); sg.position.set(0,2.65,0); exitG.add(sg); }
+const beam=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,30,24,1,true),new THREE.MeshBasicMaterial({color:0x3DFF9A,transparent:true,opacity:0.16,depthWrite:false,side:THREE.DoubleSide}));
+beam.position.y=15; exitG.add(beam);
+const exitRing=new THREE.Mesh(new THREE.RingGeometry(1.5,2.2,40),new THREE.MeshBasicMaterial({color:0x3DFF9A,transparent:true,opacity:0.7,depthWrite:false,side:THREE.DoubleSide}));
+exitRing.rotation.x=-Math.PI/2; exitRing.position.set(0,0.06,1.6); exitG.add(exitRing);
+function exitPoint(a,r){ return {x:Math.cos(a)*r, z:Math.sin(a)*r}; }
+function openExit(){
+  let a=0, best=-1;
+  for(let i=0;i<8;i++){ const t=rand(0,Math.PI*2), p=exitPoint(t,CFG.ARENA-1.4), d=Math.hypot(p.x-P.pos.x,p.z-P.pos.z); if(d>best&&d<CFG.ARENA*1.6){best=d;a=t;} }
+  U.exitA=a; U.exitOpen=true; U.exitT=URA.EXIT_OPEN;
+  const p=exitPoint(a,CFG.ARENA+0.2); exitG.position.set(p.x,0,p.z); exitG.rotation.y=Math.atan2(-p.x,-p.z); exitG.visible=true;
+  setBanner('出口が開いた！',1.4); SFX.go();
+}
+function closeExit(){ U.exitOpen=false; U.exitT=URA.EXIT_CLOSED; exitG.visible=false; }
+
+// 追いかけてくる市場の人
+function makeChaser(boss){
+  const h=makePlayer(); h.trail.visible=false;
+  const s=boss?1.45:1; h.root.scale.setScalar(s);
+  const bang=new THREE.Sprite(bangMat); bang.scale.set(0.7,0.7,1); bang.position.y=2.55; bang.visible=false; h.root.add(bang);
+  scene.add(h.root);
+  return Object.assign(h,{boss,scale:s,pos:h.root.position,face:0,swingFace:0,st:'chase',t:0,swingT:0,cd:rand(0.6,1.4),run:0,
+    kb:new THREE.Vector3(),reach:URA.REACH*(boss?1.35:1),spd:boss?0.82:rand(0.92,1.08),bang,hitDone:false,blink:rand(1,3)});
+}
+function placeChasers(){
+  for(const c of U.chasers) scene.remove(c.root); U.chasers.length=0;
+  const n=Math.min(URA.MAX_CHASERS,2+U.wave);
+  U.placed=n;
+  for(let i=0;i<n;i++){
+    const c=makeChaser(U.wave>=3&&i===0);
+    const a=Math.atan2(P.pos.z,P.pos.x)+Math.PI+(i-(n-1)/2)*0.55, r=CFG.ARENA-3;
+    c.pos.set(Math.cos(a)*r,0,Math.sin(a)*r); c.face=Math.atan2(-c.pos.x,-c.pos.z);
+    U.chasers.push(c);
+  }
+}
+function animateChaser(c,dt,pose,spd){
+  const swing=c.st==='swing', stun=c.st==='stun', kk=swing?1:1-Math.exp(-10*dt), now=performance.now()/1000, amp=Math.min(1,spd/4);
+  c.torso.rotation.y=lerp(c.torso.rotation.y,swing?pose.y*0.28:0,swing?1:1-Math.exp(-12*dt));
+  c.torso.rotation.x=lerp(c.torso.rotation.x,swing?0.18:stun?0.25:0.12*amp,1-Math.exp(-10*dt));
+  c.pivot.rotation.y=lerp(c.pivot.rotation.y,pose.y-c.torso.rotation.y,kk);
+  c.pivot.rotation.x=lerp(c.pivot.rotation.x,pose.x-c.torso.rotation.x,kk);
+  c.elbowR.rotation.x=lerp(c.elbowR.rotation.x,pose.e,kk);
+  c.tuna.rotation.x=lerp(c.tuna.rotation.x,pose.w,kk);
+  c.run+=spd*dt*1.9;
+  for(let i=0;i<2;i++){ const ph=c.run+(i?Math.PI:0);
+    c.legs[i].rotation.x=Math.sin(ph)*0.62*amp+(swing?(i?0.25:-0.3):0);
+    c.knees[i].rotation.x=(Math.max(0,Math.sin(ph+1.3))*1.15+0.08)*amp+(swing?0.25:0)+(stun?0.35:0); }
+  c.hips.position.y=1.0-(swing?0.05:0)-(stun?0.08:0); c.torso.position.y=c.hips.position.y;
+  c.body.position.y=Math.abs(Math.cos(c.run))*0.05*amp;
+  const walkArm=-Math.sin(c.run)*0.55*amp;
+  c.armL.rotation.x=lerp(c.armL.rotation.x,swing?-1.25:stun?0.15:walkArm,1-Math.exp(-14*dt));
+  c.armL.rotation.z=lerp(c.armL.rotation.z,stun?0.35:0.08,1-Math.exp(-8*dt));
+  c.elbowL.rotation.x=lerp(c.elbowL.rotation.x,swing?-0.5:-0.25-0.35*amp,1-Math.exp(-12*dt));
+  c.head.rotation.z=stun?Math.sin(now*7)*0.25:0; c.head.rotation.x=stun?0.2+Math.sin(now*5)*0.1:-0.05;
+  c.body.rotation.z=stun?Math.sin(now*8)*0.06:0;
+  c.blink-=dt; if(c.blink<0){ c.eyes.scale.y=0.15; if(c.blink<-0.11){ c.eyes.scale.y=1; c.blink=rand(2,4.5); } }
+  if(stun) c.eyes.scale.y=0.15;
+  for(let i=0;i<2;i++) c.tails[i].rotation.x=0.5+amp*0.5+Math.sin(now*14+i)*0.12*(0.4+amp);
+  c.stars.visible=stun; c.stars.rotation.y+=dt*6;
+}
+function updateChasers(dt){
+  const playing=G.phase==='play'&&!U.over, wave=U.wave;
+  const base=Math.min(7.2,URA.CHASER_SPEED+0.3*(wave-1));
+  for(const c of U.chasers){
+    const dx=P.pos.x-c.pos.x, dz=P.pos.z-c.pos.z, dist=Math.hypot(dx,dz)||0.001;
+    let vx=0, vz=0, pose=IDLE, faceTo=null;
+    c.cd-=dt;
+    if(!playing&&c.st!=='stun'){ c.st='chase'; c.bang.visible=false; }
+    if(c.st==='stun'){ c.t-=dt; if(c.t<=0){ c.st='chase'; c.cd=rand(0.4,0.9); } }
+    else if(!playing){ /* 様子見 */ }
+    else if(c.st==='chase'){
+      // 先回りしつつ、人ごとに違う方向から回り込んで囲む
+      const idx=U.chasers.indexOf(c), n=U.chasers.length, far=dist>4.5;
+      const ga=(idx/n)*Math.PI*2+U.time*0.25, gr=far?Math.min(4,dist*0.5):0;
+      const tx=P.pos.x+P.vel.x*0.45+Math.cos(ga)*gr, tz=P.pos.z+P.vel.z*0.45+Math.sin(ga)*gr, ex=tx-c.pos.x, ez=tz-c.pos.z, el=Math.hypot(ex,ez)||1;
+      const lunge=dist<5.5&&c.cd<=0.4?1.35:1;   // 近づいたら踏み込む
+      const sp=base*c.spd*lunge; vx=ex/el*sp; vz=ez/el*sp; faceTo=Math.atan2(vx,vz);
+      if(dist<c.reach*0.9&&c.cd<=0){ c.st='windup'; c.t=Math.max(0.3,URA.WINDUP-0.02*(wave-1)); c.bang.visible=true; c.swingFace=Math.atan2(dx,dz); SFX.beep(); }
+    }else if(c.st==='windup'){
+      c.t-=dt; const k=1-c.t/URA.WINDUP;
+      c.swingFace+=clamp(wrapA(Math.atan2(dx,dz)-c.swingFace),-3*dt,3*dt); faceTo=c.swingFace;
+      pose=swingPose(0.15*clamp(k,0,1)); vx=dx/dist*base*0.25; vz=dz/dist*base*0.25;
+      if(c.t<=0){ c.st='swing'; c.swingT=0.15*URA.SWING; c.hitDone=false; c.bang.visible=false; SFX.swing(); }
+    }else if(c.st==='swing'){
+      const p0=c.swingT/URA.SWING; c.swingT+=dt; const p1=Math.min(1,c.swingT/URA.SWING);
+      pose=swingPose(p1); faceTo=c.swingFace;
+      const s0=clamp(p0,0.15,0.7), s1=clamp(p1,0.15,0.7);
+      if(s1>s0&&!c.hitDone&&P.inv<=0&&dist<c.reach+0.6){
+        const a0=swingPose(s0).y-0.05, a1=swingPose(s1).y, rel=localAngle(dx,dz,c.swingFace);
+        if((rel>=a0&&rel<=a1)||dist<0.9){ c.hitDone=true; hitMe(c,dx/dist,dz/dist); }
+      }
+      if(p1>=1){ c.st='recover'; c.t=0.5; c.cd=rand(0.9,1.6); }
+    }else if(c.st==='recover'){ c.t-=dt; pose=swingPose(1); if(c.t<=0) c.st='chase'; }
+    // ノックバック
+    c.pos.x+=(vx+c.kb.x)*dt; c.pos.z+=(vz+c.kb.z)*dt; c.kb.multiplyScalar(Math.exp(-5*dt));
+    const d=Math.hypot(c.pos.x,c.pos.z), lim=CFG.ARENA-1; if(d>lim){ c.pos.x*=lim/d; c.pos.z*=lim/d; }
+    if(faceTo!=null) c.face+=wrapA(faceTo-c.face)*(1-Math.exp(-10*dt));
+    c.root.rotation.y=c.face;
+    animateChaser(c,dt,pose,Math.hypot(vx,vz));
+  }
+  // 人どうし・豚との押し合い
+  const cs=U.chasers;
+  for(let i=0;i<cs.length;i++){ const a=cs[i];
+    for(let j=i+1;j<cs.length;j++){ const b=cs[j], dx=b.pos.x-a.pos.x, dz=b.pos.z-a.pos.z, dd=Math.hypot(dx,dz), m=0.9*(a.scale+b.scale)/2;
+      if(dd<m&&dd>1e-4){ const p=(m-dd)/2, nx=dx/dd, nz=dz/dd; a.pos.x-=nx*p; a.pos.z-=nz*p; b.pos.x+=nx*p; b.pos.z+=nz*p; } }
+    if(!U.over){ const dx=P.pos.x-a.pos.x, dz=P.pos.z-a.pos.z, dd=Math.hypot(dx,dz), m=0.95*a.scale;
+      if(dd<m&&dd>1e-4){ a.pos.x-=dx/dd*(m-dd); a.pos.z-=dz/dd*(m-dd); } }
+  }
+}
+function hitMe(c,nx,nz){
+  U.lives--; P.inv=CFG.INVULN; P.vel.set(nx*10,0,nz*10);
+  frostMe(U.lives<=0?1:(URA.LIVES-U.lives)/URA.LIVES*0.7);
+  tmpV.copy(P.pos); tmpV.y=0.9; burst(tmpV,22,shardMat,10); emitMist(tmpV,{n:14,spread:2,s0:0.5,s1:1.8,life:0.9,op:0.6,up:1});
+  SFX.clang(1); SFX.hit(); SFX.squeal(false); addShake(0.6); G.hitStop=0.08;
+  tmpV.y=2.2; floatText(U.lives>0?`カチン！ あと${U.lives}発`:'カチコチ…',tmpV,'bonk');
+  if(U.lives<=0) caught();
+}
+function caught(){
+  U.over=true; P.inv=0; U.shipT=0; U.from.copy(P.pos); U.to.copy(pileSlot(G.pileN++));
+  setBanner('凍って出荷された…',2.4); SFX.boom(); for(const c of U.chasers){ c.st='chase'; c.bang.visible=false; }
+  G.phase='end'; G.endT=2.8;
+}
+function addChaser(){
+  const c=makeChaser(U.wave>=4&&!U.chasers.some(x=>x.boss));
+  const a=Math.atan2(P.pos.z,P.pos.x)+Math.PI+rand(-0.8,0.8), r=CFG.ARENA-2;
+  c.pos.set(Math.cos(a)*r,0,Math.sin(a)*r); c.face=Math.atan2(-c.pos.x,-c.pos.z); U.chasers.push(c);
+}
+function escape(){
+  U.escapes++;
+  closeExit(); U.exitT=URA.EXIT_CLOSED;
+  const t=$('shukka'); t.textContent='脱出成功！'; for(const id of ['speed','shukka']){ const e=$(id); e.classList.remove('on'); void e.offsetWidth; e.classList.add('on'); }
+  setTimeout(()=>$('speed').classList.remove('on'),700);
+  SFX.boom(); SFX.oink();
+  P.pos.set(0,0,0); P.vel.set(0,0,0); P.inv=2.5; placeChasers();
+  setTimeout(()=>{ if(U.on&&G.phase==='play') setBanner('仕切り直し！',1.2); },900);
+}
+function updateMe(dt){
+  P.inv=Math.max(0,P.inv-dt); U.dashCd=Math.max(0,U.dashCd-dt);
+  if(U.over){
+    // 凍ってトラックへ
+    U.shipT+=dt/1.3; const k=Math.min(1,U.shipT);
+    P.pos.lerpVectors(U.from,U.to,k); P.pos.y=Math.sin(k*Math.PI)*10+lerp(0,U.to.y-0.4,k);
+    me.inner.rotation.x+=dt*9; me.inner.rotation.z+=dt*5;
+    me.root.position.copy(P.pos); meStars.visible=false; me.root.visible=true; return;
+  }
+  const playing=G.phase==='play';
+  let mx=0,mz=0;
+  if(playing){ const m=readMove(), fx_=Math.sin(G.yaw), fz=Math.cos(G.yaw), rx=-Math.cos(G.yaw), rz=Math.sin(G.yaw);
+    mx=fx_*m.y+rx*m.x; mz=fz*m.y+rz*m.x; const l=Math.hypot(mx,mz); if(l>1){mx/=l;mz/=l;} }
+  if(P.queued>0) P.queued-=dt;
+  if(playing&&P.queued>0&&U.dashT<0&&U.dashCd<=0){
+    P.queued=0; const l=Math.hypot(mx,mz);
+    U.dashDir=l>0.2?{x:mx/l,z:mz/l}:{x:Math.sin(P.face),z:Math.cos(P.face)};
+    U.dashT=URA.DASH_TIME; U.dashCd=URA.DASH_CD; SFX.thud(); noise(0.18,400,1600,0.18,0.8);
+  }
+  if(U.dashT>=0){
+    U.dashT-=dt; P.vel.set(U.dashDir.x*URA.DASH_SPEED,0,U.dashDir.z*URA.DASH_SPEED); P.face=Math.atan2(U.dashDir.x,U.dashDir.z);
+    for(const c of U.chasers){ if(c.st==='stun') continue;
+      const dx=c.pos.x-P.pos.x, dz=c.pos.z-P.pos.z, d=Math.hypot(dx,dz);
+      if(d<1.35*c.scale){ c.st='stun'; c.t=URA.CHASER_STUN; c.bang.visible=false; c.kb.set(U.dashDir.x*(c.boss?5:11),0,U.dashDir.z*(c.boss?5:11));
+        U.tackles++; tmpV.copy(c.pos); tmpV.y=2.6*c.scale; floatText('ブヒッ！',tmpV,'bonk'); SFX.stun(); SFX.oink(); addShake(0.35); G.hitStop=0.05; }
+    }
+    if(U.dashT<0) P.vel.multiplyScalar(0.35);
+  }else{
+    const k=1-Math.exp(-12*dt); P.vel.x=lerp(P.vel.x,mx*URA.PIG_SPEED,k); P.vel.z=lerp(P.vel.z,mz*URA.PIG_SPEED,k);
+  }
+  P.pos.x+=P.vel.x*dt; P.pos.z+=P.vel.z*dt; P.pos.y=0;
+  const d=Math.hypot(P.pos.x,P.pos.z), lim=CFG.ARENA-0.9; if(d>lim){P.pos.x*=lim/d;P.pos.z*=lim/d;}
+  const spd=Math.hypot(P.vel.x,P.vel.z);
+  if(spd>0.6&&U.dashT<0) P.face+=wrapA(Math.atan2(P.vel.x,P.vel.z)-P.face)*(1-Math.exp(-12*dt));
+  me.root.position.copy(P.pos); me.root.rotation.y=P.face;
+  U.run+=spd*dt*3.2; const lg=Math.sin(U.run)*Math.min(1,spd/3)*0.8;
+  me.legs[0].rotation.x=lg; me.legs[3].rotation.x=lg; me.legs[1].rotation.x=-lg; me.legs[2].rotation.x=-lg;
+  me.inner.position.y=Math.abs(Math.sin(U.run))*0.1; me.inner.rotation.set(U.dashT>=0?0.3:0,0,0);
+  me.root.visible=!(P.inv>0&&Math.floor(P.inv*12)%2===0);
+  // 出口
+  if(playing&&U.exitOpen){
+    const p=exitPoint(U.exitA,CFG.ARENA-1.4);
+    exitRing.material.opacity=0.45+Math.sin(performance.now()/160)*0.25;
+    if(Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<2.4) escape();
+  }
+  const arrow=$('exitArrow');
+  if(playing&&U.exitOpen){
+    const p=exitPoint(U.exitA,CFG.ARENA-1.4), ang=wrapA(G.yaw-Math.atan2(p.x-P.pos.x,p.z-P.pos.z));
+    arrow.classList.remove('hidden'); arrow.firstElementChild.style.transform=`rotate(${ang}rad)`;
+  }else arrow.classList.add('hidden');
+}
+const dangerEls=[...document.querySelectorAll('#danger b')];
+function updateDanger(){
+  const list=U.on&&G.phase==='play'?U.chasers.filter(c=>(c.st==='windup'||c.st==='swing')&&Math.hypot(c.pos.x-P.pos.x,c.pos.z-P.pos.z)<c.reach+2.5):[];
+  const R=Math.min(innerWidth,innerHeight)*0.36;
+  dangerEls.forEach((el,i)=>{
+    const c=list[i];
+    if(!c){ el.style.display='none'; return; }
+    const ang=wrapA(Math.atan2(c.pos.x-P.pos.x,c.pos.z-P.pos.z)-G.yaw);   // 0が画面の奥（前）
+    tmpV.set(c.pos.x,1.2*c.scale,c.pos.z).project(camera);
+    if(tmpV.z<1&&Math.abs(tmpV.x)<0.92&&Math.abs(tmpV.y)<0.92){ el.style.display='none'; return; }   // 画面に映っていれば出さない
+    el.style.display='block'; el.style.transform=`translate(${-Math.sin(ang)*R}px,${-Math.cos(ang)*R}px)`;
+  });
+}
+function updateSnow(dt){
+  const a=snowGeo.attributes.position.array;
+  for(let i=0;i<SNOW;i++){ a[i*3+1]-=dt*(1.2+(i%7)*0.15); a[i*3]+=Math.sin(i+performance.now()/900)*dt*0.3;
+    if(a[i*3+1]<0){ a[i*3+1]=24; a[i*3]=P.pos.x+rand(-45,45); a[i*3+2]=P.pos.z+rand(-45,45); } }
+  snowGeo.attributes.position.needsUpdate=true;
+}
+const labelHTML=$('labelBox').innerHTML;
+function uraHUD(){
+  UI.timer.textContent=U.time.toFixed(1);
+  const lv=$('uraLives'); if(lv) lv.textContent=U.lives;
+  const es=$('uraEsc'); if(es) es.textContent=U.escapes;
+  let st=''; if(U.dashCd>0&&!U.over) st=''; if(P.inv>0&&!U.over) st=`無敵 ${P.inv.toFixed(1)}秒`;
+  if(lastHud.st!==st){ UI.status.textContent=st; UI.status.className=st?'':'hidden'; lastHud.st=st; }
+}
+// 導入：「豚の気持ちを理解しろ」→「逃げろ！」
+function introText(t,cls){ const p=$('uraIntroText'); p.innerHTML=t; p.className=cls||''; p.style.animation='none'; void p.offsetWidth; p.style.animation=''; }
+function uraUpdate(dt){
+  let sim=dt; if(G.hitStop>0){ G.hitStop-=dt; sim=dt*0.06; }
+  if(DEMO&&G.phase==='play') uraBot(dt);
+  if(G.phase==='play'&&!DEMO){ const r=(keys.has('KeyQ')||keys.has('ArrowLeft')?1:0)-(keys.has('KeyE')||keys.has('ArrowRight')?1:0); G.yaw+=r*2.6*dt; }
+  if(G.phase==='count'){
+    U.intro+=dt;
+    if(U.introStep===0&&U.intro>=2.8){ U.introStep=1; introText('逃げろ！','run'); SFX.alarm(); }
+    if(U.introStep===1&&U.intro>=3.7){ U.introStep=2; $('uraIntro').classList.add('fade'); G.phase='play'; }
+  }else if(G.phase==='play'){
+    if(U.introStep===2&&U.intro<4.4){ U.intro+=dt; if(U.intro>=4.4) show('uraIntro',false); }
+    U.time+=sim;
+    const w=1+Math.floor(U.time/URA.RAMP);
+    if(w>U.wave){ U.wave=w; if(U.chasers.length<URA.MAX_CHASERS){ addChaser(); setBanner(`追っ手が${U.chasers.length}人に増えた`,1.4); SFX.alarm(); } }
+    U.exitT-=sim;
+    if(!U.exitOpen&&U.exitT<=0) openExit();
+    else if(U.exitOpen&&U.exitT<=0) closeExit();
+  }else if(G.phase==='end'){
+    G.endT-=dt; if(G.endT<=0) finishUra();
+  }
+  updateMe(sim); updateChasers(sim); updateSnow(dt); updateFx(dt,sim); updateDanger();
+  if(G.bannerT>0){ G.bannerT-=dt; if(G.bannerT<=0) UI.banner.textContent=''; }
+  uraHUD();
+}
+function tick(dt){ if(U.on) uraUpdate(dt); else update(dt); }
+// 自動プレイ（?demo）
+function uraBot(dt){
+  let fx=0,fz=0,near=null,nd=1e9;
+  for(const c of U.chasers){ const dx=P.pos.x-c.pos.x, dz=P.pos.z-c.pos.z, d=Math.hypot(dx,dz)||0.1; if(d<nd){nd=d;near=c;}
+    if(c.st!=='stun'){ const w=1/(d*d); fx+=dx/d*w*30; fz+=dz/d*w*30; } }
+  if(U.exitOpen){ const p=exitPoint(U.exitA,CFG.ARENA-1.4), dx=p.x-P.pos.x, dz=p.z-P.pos.z, d=Math.hypot(dx,dz)||1; fx+=dx/d*1.6; fz+=dz/d*1.6; }
+  const r=Math.hypot(P.pos.x,P.pos.z); if(r>CFG.ARENA-6){ fx-=P.pos.x/r*1.2; fz-=P.pos.z/r*1.2; }
+  if(near&&nd<2.6&&near.st==='windup'&&U.dashCd<=0){ fx=near.pos.x-P.pos.x; fz=near.pos.z-P.pos.z; requestSwing(); }
+  const want=Math.atan2(fx,fz); G.yaw+=wrapA(want-G.yaw)*Math.min(1,dt*6); bot.x=0; bot.y=1;
+}
+function startUra(){
+  initAudio(); AU.ctx?.resume?.();
+  clearWorld(); show('scTitle',false); show('scResult',false); show('scPause',false); show('scRanking',false); show('scShare',false);
+  U.on=true; setNight(true); PL.root.visible=false; frostMe(0); me.inner.rotation.set(0,0,0); me.root.visible=true;
+  Object.assign(G,{phase:'count',paused:false,count:0,endT:0,score:0,shipped:0,hits:0,maxCombo:0,hitStop:0,slowmo:0,fovKick:0,
+    yaw:Math.PI,pitch:0.32,lastBeep:99,bannerT:0,pileN:0});
+  Object.assign(P,{face:Math.PI,stun:0,inv:0,swingT:-1,queued:0}); P.pos.set(0,0,0); P.vel.set(0,0,0);
+  Object.assign(U,{lives:URA.LIVES,time:0,escapes:0,tackles:0,wave:1,exitOpen:false,exitT:URA.EXIT_FIRST,dashT:-1,dashCd:0,over:false,shipT:-1,intro:0,introStep:0});
+  exitG.visible=false; placeChasers();
+  $('speed').classList.remove('on'); $('shukka').classList.remove('on');
+  UI.hud.classList.remove('hidden'); UI.touch.classList.toggle('hidden',!IS_TOUCH);
+  $('timerLabel').textContent='逃げた時間'; $('timerBox').classList.remove('hurry');
+  $('labelBox').innerHTML='<div class="n">あと<span id="uraLives">3</span><small>発</small></div><div class="s">脱出<b id="uraEsc">0</b>回</div>';
+  $('btnSwing').textContent='体当たり';
+  UI.hint.textContent=IS_TOUCH?'左スティックで逃げる　「体当たり」で追っ手をピヨらせる　緑の光が出口':'WASDで逃げる　クリック・スペースで体当たり　緑の光が出口';
+  UI.hint.style.opacity=1; setTimeout(()=>UI.hint.style.opacity=0,8000);
+  lastHud={}; UI.banner.textContent='';
+  const ov=$('uraIntro'); ov.classList.remove('fade'); show('uraIntro',true); introText('豚の気持ちを<br>理解しろ'); SFX.boom();
+  canvas.focus();
+}
+function leaveUra(){
+  if(!U.on) return;
+  U.on=false; setNight(false);
+  for(const c of U.chasers) scene.remove(c.root); U.chasers.length=0;
+  exitG.visible=false; me.root.visible=false; PL.root.visible=true; show('uraIntro',false); show('exitArrow',false); dangerEls.forEach(e=>e.style.display='none');
+  $('timerLabel').textContent='残り時間'; $('labelBox').innerHTML=labelHTML;
+  UI.shipped=$('shipped'); UI.score=$('score'); $('btnSwing').textContent='振る'; lastHud={};
+}
+function finishUra(){
+  G.phase='result';
+  if(document.pointerLockElement) document.exitPointerLock();
+  UI.hud.classList.add('hidden'); UI.touch.classList.add('hidden'); show('exitArrow',false);
+  const t=Math.floor(U.time*10)/10, isNew=t>uraBest; if(isNew){ uraBest=t; try{localStorage.setItem('maguro-ura-best',uraBest);}catch(e){} }
+  setResultMode(true);
+  $('rScore').textContent=t.toFixed(1)+'秒';
+  $('rShipped').textContent=U.escapes+'回';
+  $('rCombo').textContent=U.tackles+'回';
+  $('rBest').innerHTML=isNew?'<span class="newrec">新記録</span> '+uraBest.toFixed(1)+'秒':uraBest.toFixed(1)+'秒';
+  const rk=$('rank'); rk.textContent='脱走'; rk.classList.remove('pop'); void rk.offsetWidth; rk.classList.add('pop');
+  renderer.render(scene,camera); snapScene();
+  RES={ura:true,time:t,escapes:U.escapes,tackles:U.tackles,isNew,rank:'脱走',registered:true,at:Date.now()};
+  shareBlob=null; shareURL&&URL.revokeObjectURL(shareURL); shareURL=null;
+  show('scResult',true); $('btnRetry').focus();
+}
+function setResultMode(ura){
+  $('rTitle').textContent=ura?'逃走記録':'出荷伝票';
+  const L=ura?['逃げた時間','脱出した回数','体当たりした回数','','自己ベスト']:['スコア','出荷頭数','最大まとめ打ち','激突された回数','ハイスコア'];
+  L.forEach((t,i)=>{ $('rL'+(i+1)).textContent=t; });
+  $('rL4').classList.toggle('hidden',ura); $('rHits').classList.toggle('hidden',ura);
+  show('entryBox',!ura); show('entryMsg',!ura); $('btnRankR').classList.toggle('hidden',ura);
+  $('btnRetry').textContent=ura?'もう一度逃げる':'もう一度出荷する';
+  $('btnShare').textContent=ura?'逃げた秒数をポストする':'スコアをポストする';
+  $('shareTitle').textContent=ura?'逃げた秒数をポスト':'スコアをポスト';
+  $('btnUra').classList.add('hidden');
+}
+$('btnUra').addEventListener('click',startUra);
+$('tStamp').addEventListener('click',()=>{ if(G.phase==='title') startUra(); });
+
 /* ================= loop ================= */
 const HOOK={freeze:false,cam:false};
 let last=performance.now();
 function frame(now){
   requestAnimationFrame(frame);
   const dt=Math.min(0.05,(now-last)/1000); last=now;
-  if(!HOOK.freeze&&!G.paused&&G.phase!=='title'&&G.phase!=='result') update(dt);
+  if(!HOOK.freeze&&!G.paused&&G.phase!=='title'&&G.phase!=='result') tick(dt);
   if(!HOOK.freeze&&!G.paused) updateMist(dt);
   if(!HOOK.cam) updateCamera(dt);
   renderer.render(scene,camera);
@@ -1358,10 +1745,10 @@ function frame(now){
 requestAnimationFrame(frame);
 
 // 動作確認用フック（ゲームには影響しません）
-window.__maguro={get RES(){return RES;},makeShareImage,openRanking,register,G,P,CFG,HOOK,startGame,spawnPig,requestSwing,
+window.__maguro={get RES(){return RES;},startUra,U,URA,hitMe,makeShareImage,openRanking,register,G,P,CFG,HOOK,startGame,spawnPig,requestSwing,
   camera, PL, makeTuna, scene, killPig, bigShukka,
-  stepNR:(n=1,dt=1/60)=>{ for(let i=0;i<n;i++){ if(G.phase!=='title'&&G.phase!=='result') update(dt); updateMist(dt); updateCamera(dt);} },
-  step:(n=1,dt=1/60)=>{ for(let i=0;i<n;i++){ if(G.phase!=='title'&&G.phase!=='result') update(dt); updateMist(dt); if(!HOOK.cam) updateCamera(dt);} renderer.render(scene,camera); }};
+  stepNR:(n=1,dt=1/60)=>{ for(let i=0;i<n;i++){ if(G.phase!=='title'&&G.phase!=='result') tick(dt); updateMist(dt); updateCamera(dt);} },
+  step:(n=1,dt=1/60)=>{ for(let i=0;i<n;i++){ if(G.phase!=='title'&&G.phase!=='result') tick(dt); updateMist(dt); if(!HOOK.cam) updateCamera(dt);} renderer.render(scene,camera); }};
 if(DEMO) setTimeout(startGame,300);
 </script>
 </body>
